@@ -3,6 +3,7 @@ package turnpike
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -40,6 +41,8 @@ type WebsocketServer struct {
 	TextSerializer Serializer
 	// The serializer to use for binary frames. Defaults to JSONSerializer.
 	BinarySerializer Serializer
+	WriteTimeout     time.Duration
+	IdleTimeout      time.Duration
 }
 
 // NewWebsocketServer creates a new WebsocketServer from a map of realms
@@ -135,10 +138,12 @@ func (s *WebsocketServer) handleWebsocket(conn *websocket.Conn) {
 	}
 
 	peer := websocketPeer{
-		conn:        conn,
-		serializer:  serializer,
-		messages:    make(chan Message, 10),
-		payloadType: payloadType,
+		conn:         conn,
+		serializer:   serializer,
+		messages:     make(chan Message, 10),
+		payloadType:  payloadType,
+		writeTimeout: s.WriteTimeout,
+		idleTimeout:  s.IdleTimeout,
 	}
 	go peer.run()
 

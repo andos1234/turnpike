@@ -10,12 +10,14 @@ import (
 )
 
 type websocketPeer struct {
-	conn        *websocket.Conn
-	serializer  Serializer
-	messages    chan Message
-	payloadType int
-	closed      bool
-	sendMutex   sync.Mutex
+	conn         *websocket.Conn
+	serializer   Serializer
+	messages     chan Message
+	payloadType  int
+	closed       bool
+	sendMutex    sync.Mutex
+	writeTimeout time.Duration
+	idleTimeout  time.Duration
 }
 
 // NewWebsocketPeer connects to the websocket server at the specified url.
@@ -62,9 +64,13 @@ func (ep *websocketPeer) Send(msg Message) error {
 	}
 	ep.sendMutex.Lock()
 	defer ep.sendMutex.Unlock()
-	ep.conn.SetWriteDeadline(time.Now().Add(20 * time.Second))
+	if ep.writeTimeout > 0 {
+		ep.conn.SetWriteDeadline(time.Now().Add(ep.writeTimeout))
+	}
 	err = ep.conn.WriteMessage(ep.payloadType, b)
-	ep.conn.SetReadDeadline(time.Now().Add(20 * time.Minute))
+	if ep.idleTimeout > 0 {
+		ep.conn.SetReadDeadline(time.Now().Add(ep.idleTimeout))
+	}
 	return err
 }
 func (ep *websocketPeer) Receive() <-chan Message {
@@ -84,7 +90,9 @@ func (ep *websocketPeer) run() {
 	for {
 		// TODO: use conn.NextMessage() and stream
 		// TODO: do something different based on binary/text frames
-		ep.conn.SetReadDeadline(time.Now().Add(20 * time.Minute))
+		if ep.idleTimeout > 0 {
+			ep.conn.SetReadDeadline(time.Now().Add(ep.idleTimeout))
+		}
 		if msgType, b, err := ep.conn.ReadMessage(); err != nil {
 			if ep.closed {
 				tlog.Println("peer connection closed")
