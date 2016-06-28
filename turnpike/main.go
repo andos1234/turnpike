@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"time"
 
-	"gopkg.in/jcelliott/turnpike.v2"
+	"gopkg.in/webee/turnpike.v2"
 )
 
 var (
