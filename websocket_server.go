@@ -41,6 +41,7 @@ type WebsocketServer struct {
 	TextSerializer Serializer
 	// The serializer to use for binary frames. Defaults to JSONSerializer.
 	BinarySerializer Serializer
+	MaxMsgSize       int64
 	WriteTimeout     time.Duration
 	IdleTimeout      time.Duration
 }
@@ -142,6 +143,7 @@ func (s *WebsocketServer) handleWebsocket(conn *websocket.Conn) {
 		serializer:   serializer,
 		messages:     make(chan Message, 10),
 		payloadType:  payloadType,
+		maxMsgSize:   s.MaxMsgSize,
 		writeTimeout: s.WriteTimeout,
 		idleTimeout:  s.IdleTimeout,
 	}

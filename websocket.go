@@ -16,6 +16,7 @@ type websocketPeer struct {
 	payloadType  int
 	closed       bool
 	sendMutex    sync.Mutex
+	maxMsgSize   int64
 	writeTimeout time.Duration
 	idleTimeout  time.Duration
 }
@@ -87,6 +88,9 @@ func (ep *websocketPeer) Close() error {
 }
 
 func (ep *websocketPeer) run() {
+	if ep.maxMsgSize > 0 {
+		ep.conn.SetReadLimit(ep.maxMsgSize)
+	}
 	for {
 		// TODO: use conn.NextMessage() and stream
 		// TODO: do something different based on binary/text frames
