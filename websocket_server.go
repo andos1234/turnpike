@@ -141,6 +141,7 @@ func (s *WebsocketServer) handleWebsocket(conn *websocket.Conn) {
 	peer := websocketPeer{
 		conn:         conn,
 		serializer:   serializer,
+		sendMsgs:     make(chan Message, 16),
 		messages:     make(chan Message, 10),
 		payloadType:  payloadType,
 		maxMsgSize:   s.MaxMsgSize,
