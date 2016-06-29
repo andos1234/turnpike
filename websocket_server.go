@@ -43,6 +43,7 @@ type WebsocketServer struct {
 	BinarySerializer Serializer
 	MaxMsgSize       int64
 	WriteTimeout     time.Duration
+	PingTimeout      time.Duration
 	IdleTimeout      time.Duration
 }
 
@@ -68,8 +69,9 @@ func NewBasicWebsocketServer(uri string) *WebsocketServer {
 
 func newWebsocketServer(r Router) *WebsocketServer {
 	s := &WebsocketServer{
-		Router:    r,
-		protocols: make(map[string]protocol),
+		Router:      r,
+		protocols:   make(map[string]protocol),
+		PingTimeout: 3 * time.Minute,
 	}
 	s.Upgrader = &websocket.Upgrader{}
 	s.RegisterProtocol(jsonWebsocketProtocol, websocket.TextMessage, new(JSONSerializer))
@@ -146,6 +148,7 @@ func (s *WebsocketServer) handleWebsocket(conn *websocket.Conn) {
 		payloadType:  payloadType,
 		maxMsgSize:   s.MaxMsgSize,
 		writeTimeout: s.WriteTimeout,
+		pingTimeout:  s.PingTimeout,
 		idleTimeout:  s.IdleTimeout,
 	}
 	go peer.run()

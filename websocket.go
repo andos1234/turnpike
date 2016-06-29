@@ -17,6 +17,7 @@ type websocketPeer struct {
 	closed       bool
 	maxMsgSize   int64
 	writeTimeout time.Duration
+	pingTimeout  time.Duration
 	idleTimeout  time.Duration
 }
 
@@ -125,7 +126,7 @@ func (ep *websocketPeer) run() {
 }
 
 func (ep *websocketPeer) sending() {
-	ticker := time.NewTicker(ep.idleTimeout)
+	ticker := time.NewTicker(ep.pingTimeout)
 	defer func() {
 		ticker.Stop()
 		ep.Close()
