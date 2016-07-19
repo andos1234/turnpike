@@ -89,7 +89,7 @@ func (br *defaultBroker) Subscribe(sub Sender, msg *Subscribe) {
 }
 
 func (br *defaultBroker) RemovePeer(sub Sender) {
-	tlog.Printf("broker remove peer %s", sub)
+	tlog.Printf("broker remove peer %q", sub)
 	br.lock.Lock()
 	defer br.lock.Unlock()
 
@@ -117,7 +117,7 @@ func (br *defaultBroker) Unsubscribe(sub Sender, msg *Unsubscribe) {
 }
 
 func (br *defaultBroker) unsubscribe(sub Sender, id ID) bool {
-	tlog.Printf("broker unsubscribing: %s, %d", sub, id)
+	tlog.Printf("broker unsubscribing: %q, %d", sub, id)
 	topic, ok := br.subscriptions[id]
 	if !ok {
 		return false
