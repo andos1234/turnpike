@@ -111,7 +111,7 @@ func (r *Realm) KillSession(id ID) {
 	r.actor.Acts() <- func() {
 		if sess, ok := r.clients[id]; ok {
 			select {
-			case sess.kill <- ErrGoodbyeAndOut:
+			case sess.kill <- ErrAbortAndOut:
 			default:
 			}
 		}
@@ -145,7 +145,12 @@ func (r *Realm) handleSession(sess *Session) {
 				return
 			}
 		case reason := <-sess.kill:
-			logErr(sess.Send(&Goodbye{Reason: reason, Details: make(map[string]interface{})}))
+			switch reason {
+			case ErrAbortAndOut:
+				logErr(sess.Send(&Abort{Reason: reason, Details: make(map[string]interface{})}))
+			default:
+				logErr(sess.Send(&Goodbye{Reason: reason, Details: make(map[string]interface{})}))
+			}
 			tlog.Printf("kill session %s: %v", sess, reason)
 			// TODO: wait for client Goodbye?
 			return
