@@ -52,7 +52,10 @@ func (r *Realm) getPeer(rt Router, details map[string]interface{}) (Peer, error)
 func (r *Realm) Close() {
 	r.actor.Acts() <- func() {
 		for _, client := range r.clients {
-			client.kill <- ErrSystemShutdown
+			select {
+			case client.kill <- ErrSystemShutdown:
+			default:
+			}
 		}
 	}
 
@@ -101,6 +104,18 @@ func (l *localClient) onJoin(details map[string]interface{}) {
 
 func (l *localClient) onLeave(session ID) {
 	l.Publish("wamp.session.on_leave", []interface{}{session}, nil)
+}
+
+// KillSession disconnects a session.
+func (r *Realm) KillSession(id ID) {
+	r.actor.Acts() <- func() {
+		if sess, ok := r.clients[id]; ok {
+			select {
+			case sess.kill <- ErrGoodbyeAndOut:
+			default:
+			}
+		}
+	}
 }
 
 func (r *Realm) handleSession(sess *Session) {
