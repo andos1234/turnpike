@@ -98,8 +98,8 @@ func (r *Realm) init(rt Router) {
 	r.actor.Start()
 }
 
-func (l *localClient) onJoin(details map[string]interface{}) {
-	l.Publish("wamp.session.on_join", []interface{}{details}, nil)
+func (l *localClient) onJoin(session ID, details map[string]interface{}) {
+	l.Publish("wamp.session.on_join", []interface{}{session, details}, nil)
 }
 
 func (l *localClient) onLeave(session ID) {
@@ -122,7 +122,7 @@ func (r *Realm) handleSession(sess *Session) {
 	r.actor.SyncAct(func() {
 		r.clients[sess.Id] = sess
 	})
-	r.onJoin(sess.Details)
+	r.onJoin(sess.Id, sess.Details)
 
 	defer func() {
 		r.actor.Acts() <- func() {
