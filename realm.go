@@ -36,7 +36,7 @@ type localClient struct {
 func (r *Realm) getPeerWithSize(s int, rt Router, details map[string]interface{}) (Peer, error) {
 	peerA, peerB := localPipeWithSize(s)
 	if details == nil {
-		details = make(map[string]interface{})
+		details = map[string]interface{}{"is_local": true}
 	}
 	sess := &Session{Peer: peerA, Id: NewID(), Details: details, kill: make(chan URI, 1)}
 	rt.OpenSession(r, sess)
