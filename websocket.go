@@ -180,7 +180,7 @@ func (ep *websocketPeer) run() {
 		} else {
 			if len(b) == 0 {
 				// zero length msg as ping/pong
-				ep.messages <- MsgPingPong
+				ep.Send(MsgPingPong)
 			} else {
 				msg, err := ep.serializer.Deserialize(b)
 				if err != nil {
